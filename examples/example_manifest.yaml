@@ -1,0 +1,119 @@
+# Example manifest for aiact-summary.
+# Fill in your own values and run:
+#   aiact-summary generate example_manifest.yaml -o summary.md
+#
+# Field names and allowed values follow the official AI Office template for
+# the Article 53(1)(d) Summary of Training Content. See the README for a
+# field-by-field walkthrough, or the Annex to C(2025) 5235 final for the
+# authoritative source.
+
+version: "1.0"
+last_update: "14/09/2026"
+
+general_information:
+  provider_identification:
+    provider_name_and_contact: "Acme AI Ltd, legal@acme-ai.example"
+    authorised_representative_name_and_contact: null
+
+  model_identification:
+    versioned_model_names:
+      - "Acme-Base-70B-v1.2"
+    model_dependencies: null
+    date_of_placement_on_union_market: "01/09/2026"
+
+  modalities:
+    - modality: text
+      size_range: "1 billion to 10 trillion tokens"
+      types_of_content: >
+        Web text, scientific articles, press publications, legal and
+        official documents, source code.
+    - modality: image
+      custom_size_value: "40"
+      custom_size_unit: "million images"
+      types_of_content: "Photography, infographics, diagrams."
+
+  latest_data_collection_date: "06/2026"
+  continuously_trained_on_new_data: false
+  linguistic_characteristics: "Predominantly English, with secondary coverage of French, German, and Spanish."
+  other_characteristics: null
+  additional_comments: null
+
+data_sources:
+  publicly_available_datasets:
+    used: true
+    modalities_covered: [text]
+    large_datasets:
+      - identifier_or_name: "Common Crawl (filtered snapshot, 2025-06)"
+        link: "https://commoncrawl.org/"
+        collection_start_date: "01/2025"
+        collection_end_date: "06/2025"
+      - identifier_or_name: "Wikipedia (EN, FR, DE, ES dumps)"
+        link: "https://dumps.wikimedia.org/"
+        collection_start_date: null
+        collection_end_date: "06/2026"
+    other_datasets_general_description: >
+      A range of smaller openly licensed text collections below the "large
+      dataset" threshold, including public-domain literature and
+      permissively licensed source code repositories.
+    additional_comments: null
+
+  private_third_party_datasets:
+    licensed:
+      has_licensing_agreements: true
+      modalities_covered: [text, image]
+    other_third_party:
+      obtained: false
+      modalities_covered: []
+      publicly_known_datasets: []
+      general_description: null
+      additional_comments: null
+
+  crawled_data:
+    crawlers_used: true
+    crawler_names: ["AcmeBot/1.0"]
+    crawler_purposes: "General web text collection for pre-training."
+    crawler_behaviour_description: >
+      Respects robots.txt, does not bypass paywalls or captchas, identifies
+      itself via a documented user agent.
+    collection_period_start: "01/2025"
+    collection_period_end: "06/2025"
+    content_and_sources_description: >
+      News, blogs, forums, and public documentation sites, predominantly in
+      English and Western European languages.
+    modalities_covered: [text]
+    top_domains_summary: null
+    top_domains_file: "https://acme-ai.example/transparency/top-domains-2026-09.csv"
+    additional_comments: null
+
+  user_data:
+    model_interaction_data_used: false
+    other_product_interaction_data_used: false
+    services_or_products_description: null
+    modalities_covered: []
+    additional_comments: null
+
+  synthetic_data:
+    used: true
+    modalities_covered: [text]
+    generating_models: ["Acme-Base-70B-v1.0"]
+    other_generating_models_description: null
+    additional_comments: "Used for targeted data augmentation on underrepresented languages."
+
+  other_sources:
+    used: false
+    description: null
+    additional_comments: null
+
+data_processing_aspects:
+  tdm_reservation_respect:
+    is_code_of_practice_signatory: true
+    measures_description: >
+      Crawlers honour robots.txt and the TDM reservation opt-out protocol
+      (Article 4(3) Directive (EU) 2019/790) at both domain and page level.
+    additional_comments: "Copyright policy: https://acme-ai.example/copyright-policy"
+  illegal_content_removal:
+    measures_description: >
+      Domain-level blacklists plus a model-based classifier applied at
+      ingestion to flag and remove CSAM and terrorist content prior to
+      training.
+  other_information: null
