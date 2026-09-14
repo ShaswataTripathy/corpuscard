@@ -40,10 +40,17 @@ def _list(values, placeholder: str = "_Not provided._") -> str:
     return "\n".join(f"- {_clean(v) if isinstance(v, str) else v}" for v in values)
 
 
+def modality_list_str(values) -> str:
+    """Joins a list of Modality enum values into a display string, e.g. 'text, image'.
+    Shared by every renderer so a formatting change (new value, sorting, ...) only
+    has to be made once instead of risking the renderers drifting apart."""
+    return ", ".join(m.value if isinstance(m, Modality) else str(m) for m in values)
+
+
 def _modalities(values) -> str:
     if not values:
         return "_Not provided._"
-    return ", ".join(m.value if isinstance(m, Modality) else str(m) for m in values)
+    return modality_list_str(values)
 
 
 def render_markdown(summary: TrainingSummary) -> str:

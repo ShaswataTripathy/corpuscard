@@ -4,23 +4,23 @@ Renders a TrainingSummary as a Hugging Face-style Model Card
 popularized by Mitchell et al., 2019, "Model Cards for Model Reporting").
 
 corpuscard's manifest captures training-data provenance in detail but says
-nothing about intended use, evaluation results, or known biases — those
+nothing about intended use, evaluation results, or known biases - those
 sections are included as clearly-marked placeholders for a human to fill in,
 not fabricated.
 """
 
 from __future__ import annotations
 
-from .render import _clean
+from .render import _clean, modality_list_str
 from .schema import Modality, TrainingSummary
 
-_PLACEHOLDER = "_Not covered by corpuscard — fill in manually._"
+_PLACEHOLDER = "_Not covered by corpuscard - fill in manually._"
 
 
 def _modalities_str(values) -> str:
     if not values:
         return "unspecified"
-    return ", ".join(m.value if isinstance(m, Modality) else str(m) for m in values)
+    return modality_list_str(values)
 
 
 def render_model_card(
@@ -47,7 +47,7 @@ def render_model_card(
         label = m.value if isinstance(m, Modality) else str(m)
         a(f"  - {label}")
     if gi.linguistic_characteristics:
-        a(f"# language: {_clean(gi.linguistic_characteristics)}  # free text — set a proper ISO 639-1 code list manually")
+        a(f"# language: {_clean(gi.linguistic_characteristics)}  # free text - set a proper ISO 639-1 code list manually")
     a("---")
     a("")
     a(f"# Model Card for {model_names}")
@@ -88,8 +88,8 @@ def render_model_card(
         a("")
         if pad.large_datasets:
             for d in pad.large_datasets:
-                ref = d.link or d.description or ""
-                a(f"- {d.identifier_or_name}" + (f" — {ref}" if ref else ""))
+                ref = d.link or (_clean(d.description) if d.description else "")
+                a(f"- {_clean(d.identifier_or_name)}" + (f" - {ref}" if ref else ""))
         if pad.other_datasets_general_description:
             a(f"- Other publicly available datasets: {_clean(pad.other_datasets_general_description)}")
         a("")
@@ -108,7 +108,7 @@ def render_model_card(
     cr = ds.crawled_data
     if cr.crawlers_used:
         a(
-            f"**Web-crawled data:** collected {cr.collection_period_start or 'unknown'}–"
+            f"**Web-crawled data:** collected {cr.collection_period_start or 'unknown'}-"
             f"{cr.collection_period_end or 'unknown'}"
             + (f". {_clean(cr.content_and_sources_description)}" if cr.content_and_sources_description else ".")
         )
@@ -116,7 +116,7 @@ def render_model_card(
 
     ud = ds.user_data
     if ud.model_interaction_data_used or ud.other_product_interaction_data_used:
-        a("**User-interaction data:** included — see full training-content summary for scope.")
+        a("**User-interaction data:** included - see full training-content summary for scope.")
         a("")
 
     sd = ds.synthetic_data

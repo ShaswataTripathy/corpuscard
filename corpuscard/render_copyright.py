@@ -1,6 +1,6 @@
 """
 Renders a short copyright-policy page from the same manifest, covering
-Article 53(1)(c) AI Act — the (separate, smaller) obligation for GPAI
+Article 53(1)(c) AI Act - the (separate, smaller) obligation for GPAI
 providers to put in place a policy to comply with Union copyright law,
 including honouring text-and-data-mining rights reservations.
 
@@ -9,7 +9,7 @@ encourages providers to link to this policy from their Summary
 ("Providers are also encouraged to disclose a summary of their copyright
 policy under Article 53(1)(c) AI Act, if made publicly available").
 
-This is necessarily a thin starting point, not a complete policy — it
+This is necessarily a thin starting point, not a complete policy - it
 surfaces only what's already captured in the training-summary manifest
 (Section 3's TDM-reservation and illegal-content measures). A real policy
 will need legal review and almost certainly more detail than the manifest
@@ -21,7 +21,7 @@ from __future__ import annotations
 from .render import _clean
 from .schema import TrainingSummary
 
-_PLACEHOLDER = "_Not covered by corpuscard — fill in manually with your legal team._"
+_PLACEHOLDER = "_Not covered by corpuscard - fill in manually with your legal team._"
 
 
 def render_copyright_policy(summary: TrainingSummary) -> str:

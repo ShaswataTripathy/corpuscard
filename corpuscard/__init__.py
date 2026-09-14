@@ -1,5 +1,6 @@
 from .diff import Change, diff_summaries
 from .render import render_markdown
+from .render_ab2013 import render_ab2013
 from .render_copyright import render_copyright_policy
 from .render_html import render_html
 from .render_modelcard import render_model_card
@@ -13,6 +14,7 @@ __all__ = [
     "render_html",
     "render_model_card",
     "render_copyright_policy",
+    "render_ab2013",
     "validate",
     "Finding",
     "diff_summaries",

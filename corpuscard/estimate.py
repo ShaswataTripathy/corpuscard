@@ -55,27 +55,35 @@ class TextEstimate:
     method: str  # "tiktoken" | "heuristic"
 
 
+def _get_tiktoken_encoder(encoding_name: str):
+    """Returns a tiktoken encoder, or None if tiktoken isn't usable for any reason
+    (not installed, or unable to fetch/cache its BPE rank file, e.g. offline)."""
+    try:
+        import tiktoken  # type: ignore[import-not-found]
+
+        return tiktoken.get_encoding(encoding_name)
+    except Exception:  # noqa: BLE001 - any setup failure means "use the heuristic instead"
+        return None
+
+
 def estimate_text_tokens(paths: list[str | Path], *, encoding_name: str = "cl100k_base") -> TextEstimate:
     files = _collect_files(paths, TEXT_EXTENSIONS)
     total_words = 0
     total_tokens = 0
-    method = "heuristic"
+    enc = _get_tiktoken_encoder(encoding_name)
+    method = "tiktoken" if enc is not None else "heuristic"
 
-    try:
-        import tiktoken  # type: ignore[import-not-found]
-
-        enc = tiktoken.get_encoding(encoding_name)
-        method = "tiktoken"
-        for f in files:
-            text = f.read_text(encoding="utf-8", errors="ignore")
-            total_words += len(text.split())
-            total_tokens += len(enc.encode(text))
-    except ImportError:
-        for f in files:
-            text = f.read_text(encoding="utf-8", errors="ignore")
-            words = len(text.split())
-            total_words += words
-            total_tokens += round(words * 1.3)
+    for f in files:
+        text = f.read_text(encoding="utf-8", errors="ignore")
+        words = len(text.split())
+        total_words += words
+        if enc is not None:
+            try:
+                total_tokens += len(enc.encode(text))
+                continue
+            except Exception:  # noqa: BLE001 - fall back to the heuristic for this file
+                method = "heuristic"
+        total_tokens += round(words * 1.3)
 
     return TextEstimate(
         file_count=len(files),

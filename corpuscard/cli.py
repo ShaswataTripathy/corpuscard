@@ -6,6 +6,7 @@ CLI entry point.
     corpuscard render-html manifest.yaml -o summary.html
     corpuscard render-model-card manifest.yaml -o MODEL_CARD.md
     corpuscard render-copyright-policy manifest.yaml -o copyright-policy.md
+    corpuscard render-ab2013 manifest.yaml -o ab2013-disclosure.md
     corpuscard diff old.yaml new.yaml
     corpuscard status ./manifests/
     corpuscard estimate --text ./corpus/ --image ./images/
@@ -17,12 +18,11 @@ import argparse
 import sys
 from pathlib import Path
 
-from pydantic import ValidationError
-
 from .diff import diff_summaries
 from .estimate import estimate_image_count, estimate_text_tokens, suggest_manifest_snippet
 from .loader import load_manifest
 from .render import render_markdown
+from .render_ab2013 import render_ab2013
 from .render_copyright import render_copyright_policy
 from .render_html import render_html
 from .render_modelcard import render_model_card
@@ -33,7 +33,8 @@ from .validate import validate
 def _load_or_die(path: str) -> object | None:
     try:
         return load_manifest(path)
-    except (ValidationError, ValueError) as e:
+    except Exception as e:  # noqa: BLE001 - CLI boundary: report any load failure (bad YAML,
+        # missing file, schema validation) as a clean message, not a raw traceback.
         print(f"Failed to load manifest '{path}': {e}", file=sys.stderr)
         return None
 
@@ -105,6 +106,19 @@ def _cmd_render_copyright_policy(args: argparse.Namespace) -> int:
     if summary is None:
         return 1
     _write_or_print(render_copyright_policy(summary), args.output, "Copyright policy")
+    return 0
+
+
+def _cmd_render_ab2013(args: argparse.Namespace) -> int:
+    summary = _load_or_die(args.manifest)
+    if summary is None:
+        return 1
+    try:
+        content = render_ab2013(summary)
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+    _write_or_print(content, args.output, "AB 2013 disclosure")
     return 0
 
 
@@ -202,6 +216,11 @@ def main(argv: list[str] | None = None) -> int:
     p_copy.add_argument("manifest", help="Path to a YAML or JSON manifest file.")
     p_copy.add_argument("-o", "--output", help="Output file path. Prints to stdout if omitted.")
     p_copy.set_defaults(func=_cmd_render_copyright_policy)
+
+    p_ab = sub.add_parser("render-ab2013", help="Render a California AB 2013 training-data transparency disclosure.")
+    p_ab.add_argument("manifest", help="Path to a YAML or JSON manifest file (must include an 'ab2013' block).")
+    p_ab.add_argument("-o", "--output", help="Output file path. Prints to stdout if omitted.")
+    p_ab.set_defaults(func=_cmd_render_ab2013)
 
     p_diff = sub.add_parser("diff", help="Show what changed between two manifest versions.")
     p_diff.add_argument("old_manifest")

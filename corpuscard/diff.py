@@ -7,6 +7,7 @@ know exactly what changed before republishing.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
@@ -70,32 +71,47 @@ def _diff_value(old: Any, new: Any, path: str, changes: list[Change]) -> None:
     changes.append(Change("changed", path, old=old, new=new))
 
 
+def _index_diff(old: list, new: list, path: str, changes: list[Change]) -> None:
+    for i in range(max(len(old), len(new))):
+        _diff_value(
+            old[i] if i < len(old) else _MISSING,
+            new[i] if i < len(new) else _MISSING,
+            f"{path}[{i}]",
+            changes,
+        )
+
+
 def _diff_list(old: list, new: list, path: str, changes: list[Change]) -> None:
     key_field = _LIST_KEY_FIELDS.get(path)
     if key_field and all(isinstance(x, dict) and key_field in x for x in old + new):
-        old_by_key = {x[key_field]: x for x in old}
-        new_by_key = {x[key_field]: x for x in new}
-        for key in sorted(set(old_by_key) | set(new_by_key), key=str):
-            _diff_value(
-                old_by_key.get(key, _MISSING),
-                new_by_key.get(key, _MISSING),
-                f"{path}[{key_field}={key}]",
-                changes,
-            )
+        old_keys = [x[key_field] for x in old]
+        new_keys = [x[key_field] for x in new]
+        # If either side has a duplicate key value, key-based matching can't tell entries
+        # apart and would silently collapse them - fall back to index comparison instead.
+        if len(set(old_keys)) == len(old_keys) and len(set(new_keys)) == len(new_keys):
+            old_by_key = {x[key_field]: x for x in old}
+            new_by_key = {x[key_field]: x for x in new}
+            for key in sorted(set(old_by_key) | set(new_by_key), key=str):
+                _diff_value(
+                    old_by_key.get(key, _MISSING),
+                    new_by_key.get(key, _MISSING),
+                    f"{path}[{key_field}={key}]",
+                    changes,
+                )
+            return
+        _index_diff(old, new, path, changes)
         return
+
     try:
-        old_set, new_set = set(old), set(new)
+        # Counter, not set: a change in how many times a value repeats (e.g. an
+        # accidental duplicate crawler name being fixed) is a real change and
+        # should show up, not disappear because sets ignore multiplicity.
+        old_counts, new_counts = Counter(old), Counter(new)
     except TypeError:
         # Unhashable items with no configured key field: fall back to index comparison.
-        for i in range(max(len(old), len(new))):
-            _diff_value(
-                old[i] if i < len(old) else _MISSING,
-                new[i] if i < len(new) else _MISSING,
-                f"{path}[{i}]",
-                changes,
-            )
+        _index_diff(old, new, path, changes)
         return
-    for item in sorted(old_set - new_set, key=str):
+    for item in sorted((old_counts - new_counts).elements(), key=str):
         changes.append(Change("removed", path, old=item))
-    for item in sorted(new_set - old_set, key=str):
+    for item in sorted((new_counts - old_counts).elements(), key=str):
         changes.append(Change("added", path, new=item))

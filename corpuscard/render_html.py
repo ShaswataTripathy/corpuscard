@@ -1,5 +1,5 @@
 """
-Renders a TrainingSummary as a single self-contained HTML page — the format
+Renders a TrainingSummary as a single self-contained HTML page - the format
 the template actually asks for publication in ("on the provider's official
 website"), as an alternative to the Markdown output in render.py.
 
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from html import escape
 
-from .render import _clean, _yn
+from .render import _clean, _yn, modality_list_str
 from .schema import Modality, TrainingSummary
 
 _STYLE = """
@@ -56,7 +56,7 @@ def _esc_list(values) -> _Raw:
 def _esc_modalities(values) -> _Raw:
     if not values:
         return _PLACEHOLDER
-    return _Raw(escape(", ".join(m.value if isinstance(m, Modality) else str(m) for m in values)))
+    return _Raw(escape(modality_list_str(values)))
 
 
 def _dt_dd(term: str, value) -> str:
@@ -75,7 +75,7 @@ def render_html(summary: TrainingSummary) -> str:
 
     a("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">")
     a("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
-    a(f"<title>Training Content Summary — {escape(', '.join(gi.model_identification.versioned_model_names))}</title>")
+    a(f"<title>Training Content Summary - {escape(', '.join(gi.model_identification.versioned_model_names))}</title>")
     a(f"<style>{_STYLE}</style></head><body>")
 
     a("<h1>Template for the Public Summary of Training Content for General-Purpose AI models</h1>")

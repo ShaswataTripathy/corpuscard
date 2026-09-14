@@ -68,8 +68,8 @@ class ModalityEntry(BaseModel):
         if self.modality == Modality.OTHER and not self.other_modality_name:
             raise ValueError("other_modality_name is required when modality is OTHER")
 
-        has_fixed = self.size_range is not None
-        has_custom = self.custom_size_value is not None and self.custom_size_unit is not None
+        has_fixed = bool(self.size_range)
+        has_custom = bool(self.custom_size_value) and bool(self.custom_size_unit)
         if not has_fixed and not has_custom:
             raise ValueError(
                 f"{self.modality.value}: provide either size_range or "
@@ -99,6 +99,7 @@ class ModelIdentification(BaseModel):
     """Section 1.2"""
 
     versioned_model_names: List[str] = Field(
+        min_length=1,
         description="Unique identifier(s) for the model(s)/model version(s) covered by this Summary, "
         "e.g. 'Llama 3.1-405B'."
     )
@@ -293,11 +294,63 @@ class DataProcessingAspects(BaseModel):
     other_information: Optional[str] = None
 
 
+class IntellectualPropertyStatus(BaseModel):
+    """AB 2013 item 5: IP status of the training datasets, at the aggregate level
+    the statute asks for (not a document-by-document accounting)."""
+
+    includes_copyrighted_content: bool
+    includes_trademarked_content: bool
+    includes_patented_content: bool
+    includes_public_domain_content: bool
+    additional_comments: Optional[str] = None
+
+
+class CaliforniaAB2013Disclosures(BaseModel):
+    """
+    Supplementary fields needed to satisfy California AB 2013 (Generative
+    Artificial Intelligence: Training Data Transparency, Cal. Bus. & Prof.
+    Code §22757.11 et seq., effective 2026-01-01) beyond what the base
+    manifest already captures for the EU Article 53(1)(d) Summary.
+
+    AB 2013 (Section 3111(a)) enumerates 12 required disclosure items. Six
+    are already covered by the base manifest and are not duplicated here:
+      1.  sources/owners of datasets            -> data_sources (2.1-2.6)
+      3.  number of data points (ranges OK)      -> general_information.modalities[].size_range
+      4.  types of data points                   -> general_information.modalities[].types_of_content
+      6.  purchased or licensed                  -> data_sources.private_third_party_datasets.licensed
+      10. time period data was collected         -> dataset / crawled_data collection dates
+      12. synthetic data generation, continuous  -> data_sources.synthetic_data
+
+    This model covers the remaining six (items 2, 5, 7, 8, 9, 11).
+    """
+
+    intended_purpose_description: str = Field(
+        description="Item 2: a description of how the datasets further the system's intended purpose."
+    )
+    ip_status: IntellectualPropertyStatus = Field(description="Item 5.")
+    includes_personal_information: bool = Field(description="Item 7.")
+    includes_aggregate_consumer_information: bool = Field(
+        description="Item 8 (as defined by the CCPA)."
+    )
+    data_cleaning_description: Optional[str] = Field(
+        default=None, description="Item 9: cleaning, processing, or other modification of the datasets."
+    )
+    first_used_in_development_date: Optional[str] = Field(
+        default=None, description="Item 11: date(s) the datasets were first used during development."
+    )
+
+
 class TrainingSummary(BaseModel):
-    """Top-level document: the full Article 53(1)(d) Summary."""
+    """Top-level document: the full Article 53(1)(d) Summary, plus an optional
+    supplementary block of fields needed to also satisfy California AB 2013."""
 
     version: str = Field(description="Version of the Summary, with link(s) to previous versions where applicable.")
     last_update: str = Field(description="Date of last update, format DD/MM/YY.")
     general_information: GeneralInformation
     data_sources: DataSources
     data_processing_aspects: DataProcessingAspects
+    ab2013: Optional[CaliforniaAB2013Disclosures] = Field(
+        default=None,
+        description="Set this to also render a California AB 2013 disclosure "
+        "(corpuscard render-ab2013). Leave unset if AB 2013 doesn't apply to you.",
+    )

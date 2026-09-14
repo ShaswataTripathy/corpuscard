@@ -117,3 +117,24 @@ data_processing_aspects:
       ingestion to flag and remove CSAM and terrorist content prior to
       training.
   other_information: null
+
+# Optional: only needed if California AB 2013 applies to you (a covered
+# developer releasing a generative AI system in California). Omit this whole
+# block if it doesn't - `corpuscard render-ab2013` will tell you clearly if
+# you try to render it without one.
+ab2013:
+  intended_purpose_description: >
+    General-purpose text and image generation for enterprise search,
+    summarization, and content-drafting applications.
+  ip_status:
+    includes_copyrighted_content: true
+    includes_trademarked_content: false
+    includes_patented_content: false
+    includes_public_domain_content: true
+    additional_comments: "Copyrighted content limited to content licensed under Section 2.2.1."
+  includes_personal_information: false
+  includes_aggregate_consumer_information: false
+  data_cleaning_description: >
+    Deduplication, PII redaction, and toxic-content filtering applied to
+    web-crawled and publicly available text prior to training.
+  first_used_in_development_date: "03/2025"
