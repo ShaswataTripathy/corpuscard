@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "corpuscard"
 version = "0.1.0"
-description = "The card for your training corpus: generate the EU AI Act Article 53(1)(d) public training-data summary from a structured manifest."
+description = "The card for your training corpus: generate training-data transparency disclosures (EU AI Act Article 53, California AB 2013) from one structured manifest."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [{ name = "Shaswata Tripathy" }]
-keywords = ["eu-ai-act", "compliance", "gpai", "article-53", "training-data-transparency", "model-card"]
+keywords = ["eu-ai-act", "ab-2013", "compliance", "gpai", "article-53", "training-data-transparency", "model-card"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",

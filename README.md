@@ -1,21 +1,22 @@
 # corpuscard
 
-The card for your training corpus. Generate the EU AI Act **Article 53(1)(d)** public training-data summary — the disclosure every general-purpose AI (GPAI) model provider placing a model on the EU market must publish — from a structured manifest, instead of hand-filling the official form.
+The card for your training corpus. Fill in one structured manifest, get training-data transparency disclosures for multiple jurisdictions out of it — the EU AI Act's **Article 53(1)(d)** public training-data summary, and **California AB 2013**'s training-data transparency disclosure — instead of hand-filling each government's form separately.
 
 ```bash
 pip install -e .
-corpuscard generate examples/example_manifest.yaml -o summary.md
+corpuscard generate examples/example_manifest.yaml -o summary.md      # EU Article 53(1)(d)
+corpuscard render-ab2013 examples/example_manifest.yaml -o ab2013.md  # California AB 2013
 ```
 
-That's it — `summary.md` is a narrative-form document matching the [official AI Office template](https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models) section-for-section, ready to publish on your website.
+`summary.md` is a narrative-form document matching the [official AI Office template](https://digital-strategy.ec.europa.eu/en/library/explanatory-notice-and-template-public-summary-training-content-general-purpose-ai-models) section-for-section, ready to publish on your website. `ab2013.md` covers [AB 2013](#california-ab-2013)'s 12 required disclosure items the same way.
 
 ## Why this exists
 
-Article 53(1)(d) of the AI Act requires GPAI providers to publish a "sufficiently detailed summary" of their training content, using a template the AI Office finalized on 2025-07-24. Enforcement started 2026-08-02, with fines up to €15,000,000 or 3% of global annual turnover for non-compliance.
+Both laws require a public, "sufficiently detailed" summary of what a generative AI model was trained on, and both were built around the same underlying facts — sources, licensing, collection dates, synthetic-data use, roughly how much data. Article 53(1)(d) of the EU AI Act requires this using a template the AI Office finalized on 2025-07-24 (enforcement started 2026-08-02, fines up to €15,000,000 or 3% of global annual turnover); AB 2013 requires it in California as of 2026-01-01, via 12 statutory disclosure items. Six of those 12 items are effectively the same information the EU template already asks for.
 
-The template asks for **categorical, aggregate disclosure** — what types and rough amounts of data you used, where it came from, how you handled copyright opt-outs — not a document-by-document accounting of your training corpus. That makes it a data-cataloging and documentation problem: something a schema, a manifest file, and a renderer can handle, rather than something that needs to be typed into a web form by hand every time your data mix changes.
+Both ask for **categorical, aggregate disclosure** — what types and rough amounts of data you used, where it came from — not a document-by-document accounting of your training corpus. That makes it a data-cataloging and documentation problem: something a schema, a manifest file, and a renderer can handle, rather than something that needs to be typed into two different government forms by hand every time your data mix changes.
 
-This package is exactly that: a typed schema mirroring the template's three sections, a manifest format you fill in once and update as your training data changes, and a set of renderers — the official narrative Summary, a self-contained HTML page, a Hugging Face-style Model Card, a companion copyright-policy page, and a [California AB 2013](#california-ab-2013) disclosure — that all read from the same facts. Plus completeness checks (including two nudges toward the kind of specificity that actually distinguishes a real disclosure from checkbox theater — see below), a diff tool for the six-month update cadence, fleet-wide staleness tracking, and file-based size estimation to help fill the manifest in the first place.
+This package is exactly that: a typed schema mirroring the EU template's three sections plus the handful of extra fields AB 2013 needs on top, a manifest format you fill in once and update as your training data changes, and a set of renderers — the official EU narrative Summary, the AB 2013 disclosure, a self-contained HTML page, a Hugging Face-style Model Card, a companion copyright-policy page — that all read from the same facts. Plus completeness checks (including two nudges toward the kind of specificity that actually distinguishes a real disclosure from checkbox theater — see below), a diff tool for the six-month EU update cadence, fleet-wide staleness tracking, and file-based size estimation to help fill the manifest in the first place.
 
 **What this is not:** legal advice, and not a guarantee that your Summary is legally sufficient. It structures the disclosure the template asks for; whether your disclosure is accurate and adequate is still on you and your legal team.
 
