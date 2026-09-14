@@ -121,6 +121,18 @@ python -m venv .venv
 pytest
 ```
 
+## Releasing
+
+`.github/workflows/publish.yml` runs the test suite, builds the sdist/wheel, and publishes to PyPI whenever a GitHub Release is published, using [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC) — no API token is stored in the repo.
+
+One-time setup before the first release: on [pypi.org](https://pypi.org/manage/account/publishing/), add a pending trusted publisher with:
+- PyPI project name: `corpuscard`
+- Owner: `ShaswataTripathy`, repository: `corpuscard`
+- Workflow: `publish.yml`
+- Environment: `pypi`
+
+After that, cutting a release is: bump `version` in `pyproject.toml`, tag it, and publish a GitHub Release from that tag — the workflow does the rest.
+
 ## Status
 
 Early — this covers the template as published 2025-07-24. The AI Office has said it may revise the template "in view of practical experience gained" (Explanatory Notice, point 34); if that happens, `schema.py` and `render.py` will need updating to match. PRs welcome, especially from anyone who has actually filed a Summary and found a field this doesn't handle well.
